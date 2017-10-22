@@ -1,14 +1,15 @@
 # Unity 360° Screenshot Capture
 This simple script captures a **360° photo** with your Unity camera and injects the necessary **XMP metadata** to it; so the output image supports 360° viewers on the web out-of-the-box (like *Facebook* and *Flickr*). Both **JPEG** and **PNG** formats are supported.
 
-The raw image is in equirectangular form. Here is an example screenshot, [which looks like this](https://flic.kr/p/VPxPwY) when uploaded to *Flickr*:
+The raw image is in equirectangular form. Here is an example screenshot: [(it looks like this when uploaded to Flickr)](https://flic.kr/p/VPxPwY):
+
 ![screenshot](360render.jpeg)
 
 ## How to Use
 Simply call the `I360Render.Capture()` function. Its signature is as following:
 
 ```csharp
-public static byte[] I360Render.Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null );
+public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null );
 ```
 
 - **width**: The width of the resulting image. It must be a power of 2. The height will be equal to *width / 2*. Be aware that maximum allowed image width is 8192 pixels
@@ -17,7 +18,7 @@ public static byte[] I360Render.Capture( int width = 1024, bool encodeAsJPEG = t
 
 The function returns a **byte[]** object that you can write to a file using `File.WriteAllBytes` (see example code below).
 
-Example code:
+## Example Code
 
 ```csharp
 using System.IO;
