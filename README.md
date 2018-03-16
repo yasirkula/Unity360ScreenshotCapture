@@ -1,4 +1,9 @@
 # Unity 360° Screenshot Capture
+
+**Available on Asset Store:** https://www.assetstore.unity3d.com/en/#!/content/112864
+
+**Forum Thread:** https://forum.unity.com/threads/360-screenshot-capture-open-source.501310/
+
 This simple script captures a **360° photo** with your Unity camera and injects the necessary **XMP metadata** to it; so the output image supports 360° viewers on the web out-of-the-box (like *Facebook* and *Flickr*). Both **JPEG** and **PNG** formats are supported.
 
 The raw image is in equirectangular form. Here is an example screenshot [(it looks like this when uploaded to Flickr)](https://flic.kr/p/VPxPwY):
