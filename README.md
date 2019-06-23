@@ -14,12 +14,13 @@ The raw image is in equirectangular form. Here is an example screenshot [(it loo
 Simply call the `I360Render.Capture()` function. Its signature is as following:
 
 ```csharp
-public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null );
+public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true );
 ```
 
 - **width**: The width of the resulting image. It must be a power of 2. The height will be equal to *width / 2*. Be aware that maximum allowed image width is 8192 pixels
 - **encodeAsJPEG**: determines whether the image will be encoded as *JPEG* or *PNG*
 - **renderCam**: the camera that will be used to render the 360° image. If set to null, *Camera.main* will be used
+- **faceCameraDirection**: if set to *true*, when the 360° image is viewed in a 360° viewer, initial camera rotation will match the rotation of the *renderCam*. Otherwise, initial camera rotation will be *Quaternion.identity* (facing Z+ axis)
 
 The function returns a **byte[]** object that you can write to a file using `File.WriteAllBytes` (see example code below).
 

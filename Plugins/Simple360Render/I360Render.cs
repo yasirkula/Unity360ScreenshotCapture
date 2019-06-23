@@ -1,11 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
-public static class I360Render 
+public static class I360Render
 {
 	private static Material equirectangularConverter = null;
+	private static int paddingX;
 
-	public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null )
+	public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true )
 	{
 		if( renderCam == null )
 		{
@@ -20,9 +21,13 @@ public static class I360Render
 		RenderTexture camTarget = renderCam.targetTexture;
 
 		if( equirectangularConverter == null )
-			equirectangularConverter = new Material( Shader.Find( "Hidden/CubemapToEquirectangular" ) );
+		{
+			equirectangularConverter = new Material( Shader.Find( "Hidden/I360CubemapToEquirectangular" ) );
+			paddingX = Shader.PropertyToID( "_PaddingX" );
+		}
 
 		int cubemapSize = Mathf.Min( Mathf.NextPowerOfTwo( width ), 8192 );
+		RenderTexture activeRT = RenderTexture.active;
 		RenderTexture cubemap = null, equirectangularTexture = null;
 		Texture2D output = null;
 		try
@@ -39,25 +44,24 @@ public static class I360Render
 				return null;
 			}
 
+			equirectangularConverter.SetFloat( paddingX, faceCameraDirection ? ( renderCam.transform.eulerAngles.y / 360f ) : 0f );
 			Graphics.Blit( cubemap, equirectangularTexture, equirectangularConverter );
-			
-			RenderTexture temp = RenderTexture.active;
+
 			RenderTexture.active = equirectangularTexture;
 			output = new Texture2D( equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false );
 			output.ReadPixels( new Rect( 0, 0, equirectangularTexture.width, equirectangularTexture.height ), 0, 0 );
-			RenderTexture.active = temp;
-			
+
 			return encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG( output ) : InsertXMPIntoTexture2D_PNG( output );
 		}
 		catch( Exception e )
 		{
 			Debug.LogException( e );
-
 			return null;
 		}
 		finally
 		{
 			renderCam.targetTexture = camTarget;
+			RenderTexture.active = activeRT;
 
 			if( cubemap != null )
 				RenderTexture.ReleaseTemporary( cubemap );

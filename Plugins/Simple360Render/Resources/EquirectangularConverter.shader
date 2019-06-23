@@ -2,15 +2,19 @@
 
 // Credit: https://github.com/Mapiarz/CubemapToEquirectangular/blob/master/Assets/Shaders/CubemapToEquirectangular.shader
 
-Shader "Hidden/CubemapToEquirectangular" {
-  Properties {
+Shader "Hidden/I360CubemapToEquirectangular"
+{
+	Properties
+	{
 		_MainTex ("Cubemap (RGB)", CUBE) = "" {}
+		_PaddingX ("Padding X", Float) = 0.0
 	}
 
-	Subshader {
-		Pass {
+	Subshader
+	{
+		Pass
+		{
 			ZTest Always Cull Off ZWrite Off
-			Fog { Mode off }      
 
 			CGPROGRAM
 				#pragma vertex vert
@@ -22,18 +26,20 @@ Shader "Hidden/CubemapToEquirectangular" {
 				#define PI    3.141592653589793
 				#define TWOPI 6.283185307179587
 
-				struct v2f {
+				struct v2f
+				{
 					float4 pos : POSITION;
 					float2 uv : TEXCOORD0;
 				};
 		
 				samplerCUBE _MainTex;
-
-				v2f vert( appdata_img v )
+				float _PaddingX;
+				
+				v2f vert(appdata_img v)
 				{
 					v2f o;
 					o.pos = UnityObjectToClipPos(v.vertex);
-					o.uv = v.texcoord.xy * float2(TWOPI, PI);
+					o.uv = (v.texcoord.xy + float2(_PaddingX,0)) * float2(TWOPI, PI);
 					return o;
 				}
 		
