@@ -1,6 +1,6 @@
 # Unity 360° Screenshot Capture
 
-**Available on Asset Store:** https://www.assetstore.unity3d.com/en/#!/content/112864
+**Available on Asset Store:** https://assetstore.unity.com/packages/tools/camera/360-screenshot-capture-112864
 
 **Forum Thread:** https://forum.unity.com/threads/360-screenshot-capture-open-source.501310/
 
@@ -8,10 +8,11 @@ This simple script captures a **360° photo** with your Unity camera and injects
 
 The raw image is in equirectangular form. Here is an example screenshot [(it looks like this when uploaded to Flickr)](https://flic.kr/p/VPxPwY):
 
-![screenshot](360render.jpeg)
+![screenshot](Images/360render.jpeg)
 
-## How to Use
-Simply call the `I360Render.Capture()` function. Its signature is as following:
+## HOW TO
+
+After importing [360Screenshot.unitypackage](https://github.com/yasirkula/Unity360ScreenshotCapture/releases) to your project, simply call the `I360Render.Capture()` function in your scripts. Its signature is as following:
 
 ```csharp
 public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true );
@@ -24,7 +25,7 @@ public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera
 
 The function returns a **byte[]** object that you can write to a file using `File.WriteAllBytes` (see example code below).
 
-## Example Code
+## EXAMPLE CODE
 
 ```csharp
 using System.IO;
