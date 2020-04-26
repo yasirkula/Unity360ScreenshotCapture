@@ -12,9 +12,19 @@ The raw image is in equirectangular form. Here is an example screenshot [(it loo
 
 ![screenshot](Images/360render.jpeg)
 
+## INSTALLATION
+
+There are 4 ways to install this plugin:
+
+- import [360Screenshot.unitypackage](https://github.com/yasirkula/Unity360ScreenshotCapture/releases) via *Assets-Import Package*
+- clone/[download](https://github.com/yasirkula/Unity360ScreenshotCapture/archive/master.zip) this repository and move the *Plugins* folder to your Unity project's *Assets* folder
+- import it from [Asset Store](https://assetstore.unity.com/packages/tools/camera/360-screenshot-capture-112864)
+- *(via Package Manager)* add the following line to *Packages/manifest.json*:
+  - `"com.yasirkula.screenshotcapture": "https://github.com/yasirkula/Unity360ScreenshotCapture.git",`
+
 ## HOW TO
 
-After importing [360Screenshot.unitypackage](https://github.com/yasirkula/Unity360ScreenshotCapture/releases) to your project, simply call the `I360Render.Capture()` function in your scripts. Its signature is as following:
+Simply call the `I360Render.Capture()` function in your scripts. Its signature is as following:
 
 ```csharp
 public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true );

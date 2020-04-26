@@ -1,0 +1,6 @@
+{
+  "name": "com.yasirkula.screenshotcapture",
+  "displayName": "360\u00b0 Screenshot Capture",
+  "version": "1.0.0",
+  "description": "This plugin helps you capture 360\u00b0 screenshots in equirectangular format during gameplay."
+}
