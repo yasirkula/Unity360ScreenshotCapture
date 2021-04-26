@@ -3,10 +3,11 @@
 Online documentation & example code available at: https://github.com/yasirkula/Unity360ScreenshotCapture
 E-mail: yasirkula@gmail.com
 
-1. ABOUT
+### ABOUT
 This plugin helps you capture 360° screenshots in equirectangular format during gameplay.
 
-2. HOW TO
+
+### HOW TO
 Simply call the following function:
 
 public static byte[] I360Render.Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true );
@@ -17,3 +18,8 @@ public static byte[] I360Render.Capture( int width = 1024, bool encodeAsJPEG = t
 - faceCameraDirection: if set to true, when the 360° image is viewed in a 360° viewer, initial camera rotation will match the rotation of the renderCam. Otherwise, initial camera rotation will be Quaternion.identity (facing Z+ axis)
 
 This function returns a byte[] object that you can write to a file using File.WriteAllBytes.
+
+
+### FAQ
+- Objects are rendered inside out in the 360° screenshot
+This is usually caused by 3rd-party plugins that change the value of "GL.invertCulling" (e.g. mirrors). See the solution: https://forum.unity.com/threads/360-screenshot-capture-open-source.501310/#post-7078093

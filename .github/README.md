@@ -39,6 +39,12 @@ public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera
 
 The function returns a **byte[]** object that you can write to a file using `File.WriteAllBytes` (see example code below).
 
+## FAQ
+
+- **Objects are rendered inside out in the 360° screenshot**
+
+This is usually caused by 3rd-party plugins that change the value of `GL.invertCulling` (e.g. mirrors). See the solution: https://forum.unity.com/threads/360-screenshot-capture-open-source.501310/#post-7078093
+
 ## EXAMPLE CODE
 
 ```csharp
