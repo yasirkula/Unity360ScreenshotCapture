@@ -1,5 +1,9 @@
 ﻿using System;
 using UnityEngine;
+#if UNITY_2018_2_OR_NEWER
+using UnityEngine.Rendering;
+#endif
+using TextureDimension = UnityEngine.Rendering.TextureDimension;
 
 public static class I360Render
 {
@@ -8,12 +12,35 @@ public static class I360Render
 
 	public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true )
 	{
+		return CaptureInternal( width, encodeAsJPEG, renderCam, faceCameraDirection );
+	}
+
+#if UNITY_2018_2_OR_NEWER
+	public static void CaptureAsync( Action<byte[]> callback, int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true )
+	{
+		CaptureInternal( width, encodeAsJPEG, renderCam, faceCameraDirection, callback );
+	}
+#endif
+
+#if UNITY_2018_2_OR_NEWER
+	private static byte[] CaptureInternal( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true, Action<byte[]> asyncCallback = null )
+#else
+	private static byte[] CaptureInternal( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true )
+#endif
+
+	{
 		if( renderCam == null )
 		{
 			renderCam = Camera.main;
 			if( renderCam == null )
 			{
 				Debug.LogError( "Error: no camera detected" );
+
+#if UNITY_2018_2_OR_NEWER
+				if( asyncCallback != null )
+					asyncCallback( null );
+#endif
+
 				return null;
 			}
 		}
@@ -26,6 +53,9 @@ public static class I360Render
 			paddingX = Shader.PropertyToID( "_PaddingX" );
 		}
 
+#if UNITY_2018_2_OR_NEWER
+		bool asyncOperationStarted = false;
+#endif
 		int cubemapSize = Mathf.Min( Mathf.NextPowerOfTwo( width ), 8192 );
 		RenderTexture activeRT = RenderTexture.active;
 		RenderTexture cubemap = null, equirectangularTexture = null;
@@ -33,44 +63,120 @@ public static class I360Render
 		try
 		{
 			cubemap = RenderTexture.GetTemporary( cubemapSize, cubemapSize, 0 );
-			cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
+			cubemap.dimension = TextureDimension.Cube;
 
 			equirectangularTexture = RenderTexture.GetTemporary( cubemapSize, cubemapSize / 2, 0 );
-			equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
+			equirectangularTexture.dimension = TextureDimension.Tex2D;
 
 			if( !renderCam.RenderToCubemap( cubemap, 63 ) )
 			{
 				Debug.LogError( "Rendering to cubemap is not supported on device/platform!" );
+
+#if UNITY_2018_2_OR_NEWER
+				if( asyncCallback != null )
+					asyncCallback( null );
+#endif
+
 				return null;
 			}
 
 			equirectangularConverter.SetFloat( paddingX, faceCameraDirection ? ( renderCam.transform.eulerAngles.y / 360f ) : 0f );
 			Graphics.Blit( cubemap, equirectangularTexture, equirectangularConverter );
 
-			RenderTexture.active = equirectangularTexture;
-			output = new Texture2D( equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false );
-			output.ReadPixels( new Rect( 0, 0, equirectangularTexture.width, equirectangularTexture.height ), 0, 0 );
+#if UNITY_2018_2_OR_NEWER
+			if( asyncCallback != null )
+			{
+				AsyncGPUReadback.Request( equirectangularTexture, 0, TextureFormat.RGB24, ( asyncResult ) =>
+				{
+					try
+					{
+						output = new Texture2D( equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false );
+						if( !asyncResult.hasError )
+							output.LoadRawTextureData( asyncResult.GetData<byte>() );
+						else
+						{
+							Debug.LogError( "Async thumbnail request failed, falling back to conventional method" );
 
-			return encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG( output ) : InsertXMPIntoTexture2D_PNG( output );
+							RenderTexture _activeRT = RenderTexture.active;
+							try
+							{
+								RenderTexture.active = equirectangularTexture;
+								output.ReadPixels( new Rect( 0, 0, equirectangularTexture.width, equirectangularTexture.height ), 0, 0 );
+							}
+							finally
+							{
+								RenderTexture.active = _activeRT;
+							}
+						}
+
+						asyncCallback( encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG( output ) : InsertXMPIntoTexture2D_PNG( output ) );
+					}
+					finally
+					{
+						if( equirectangularTexture )
+							RenderTexture.ReleaseTemporary( equirectangularTexture );
+
+						if( output )
+							UnityEngine.Object.DestroyImmediate( output );
+					}
+				} );
+
+				asyncOperationStarted = true;
+				return null;
+			}
+			else
+#endif
+			{
+				RenderTexture.active = equirectangularTexture;
+				output = new Texture2D( equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false );
+				output.ReadPixels( new Rect( 0, 0, equirectangularTexture.width, equirectangularTexture.height ), 0, 0 );
+				return encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG( output ) : InsertXMPIntoTexture2D_PNG( output );
+			}
 		}
 		catch( Exception e )
 		{
 			Debug.LogException( e );
+
+#if UNITY_2018_2_OR_NEWER
+			if( !asyncOperationStarted && asyncCallback != null )
+				asyncCallback( null );
+#endif
+
 			return null;
 		}
 		finally
 		{
 			renderCam.targetTexture = camTarget;
-			RenderTexture.active = activeRT;
 
-			if( cubemap != null )
+#if UNITY_2018_2_OR_NEWER
+			if( !asyncOperationStarted )
+#endif
+			{
+				RenderTexture.active = activeRT;
+			}
+
+			if( cubemap )
 				RenderTexture.ReleaseTemporary( cubemap );
 
-			if( equirectangularTexture != null )
-				RenderTexture.ReleaseTemporary( equirectangularTexture );
+			if( equirectangularTexture )
+			{
+#if UNITY_2018_2_OR_NEWER
+				if( !asyncOperationStarted )
+#endif
+				{
+					RenderTexture.ReleaseTemporary( equirectangularTexture );
+				}
+			}
 
-			if( output != null )
-				UnityEngine.Object.DestroyImmediate( output );
+			if( output )
+			{
+#if UNITY_2018_2_OR_NEWER
+				if( !asyncOperationStarted )
+#endif
+				{
+					UnityEngine.Object.DestroyImmediate( output );
+				}
+			}
 		}
 	}
 

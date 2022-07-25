@@ -28,10 +28,13 @@ There are 5 ways to install this plugin:
 
 ## HOW TO
 
-Simply call the `I360Render.Capture()` function in your scripts. Its signature is as following:
+Simply call the `I360Render.Capture()` or `I360Render.CaptureAsync()` (Unity 2018.2 or later) function in your scripts. Their signatures are as follows:
 
 ```csharp
 public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true );
+
+// !!! Async version uses AsyncGPUReadback.Request so it won't work on all platforms or Graphics APIs !!!
+public static void CaptureAsync( Action<byte[]> callback, int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true );
 ```
 
 - **width**: The width of the resulting image. It must be a power of 2. The height will be equal to *width / 2*. Be aware that maximum allowed image width is 8192 pixels
@@ -39,13 +42,17 @@ public static byte[] Capture( int width = 1024, bool encodeAsJPEG = true, Camera
 - **renderCam**: the camera that will be used to render the 360° image. If set to null, *Camera.main* will be used
 - **faceCameraDirection**: if set to *true*, when the 360° image is viewed in a 360° viewer, initial camera rotation will match the rotation of the *renderCam*. Otherwise, initial camera rotation will be *Quaternion.identity* (facing Z+ axis)
 
-The function returns a **byte[]** object that you can write to a file using `File.WriteAllBytes` (see example code below).
+These functions return a **byte[]** object either directly or as a callback; you can write these bytes to a file using `File.WriteAllBytes` (see example code below).
 
 ## FAQ
 
 - **Objects are rendered inside out in the 360° screenshot**
 
 This is usually caused by 3rd-party plugins that change the value of `GL.invertCulling` (e.g. mirrors). See the solution: https://forum.unity.com/threads/360-screenshot-capture-open-source.501310/#post-7078093
+
+- **360° screenshot is blank on Oculus Quest 2**
+
+Try using the `CaptureAsync` function instead of `Capture`.
 
 ## EXAMPLE CODE
 
