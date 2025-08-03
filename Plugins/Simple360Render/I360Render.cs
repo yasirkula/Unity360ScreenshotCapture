@@ -1,9 +1,6 @@
 ﻿using System;
 using UnityEngine;
-#if UNITY_2018_2_OR_NEWER
 using UnityEngine.Rendering;
-#endif
-using TextureDimension = UnityEngine.Rendering.TextureDimension;
 
 public static class I360Render
 {
@@ -15,19 +12,12 @@ public static class I360Render
 		return CaptureInternal( width, encodeAsJPEG, renderCam, faceCameraDirection );
 	}
 
-#if UNITY_2018_2_OR_NEWER
 	public static void CaptureAsync( Action<byte[]> callback, int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true )
 	{
 		CaptureInternal( width, encodeAsJPEG, renderCam, faceCameraDirection, callback );
 	}
-#endif
 
-#if UNITY_2018_2_OR_NEWER
 	private static byte[] CaptureInternal( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true, Action<byte[]> asyncCallback = null )
-#else
-	private static byte[] CaptureInternal( int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true )
-#endif
-
 	{
 		if( renderCam == null )
 		{
@@ -36,10 +26,8 @@ public static class I360Render
 			{
 				Debug.LogError( "Error: no camera detected" );
 
-#if UNITY_2018_2_OR_NEWER
 				if( asyncCallback != null )
 					asyncCallback( null );
-#endif
 
 				return null;
 			}
@@ -53,9 +41,7 @@ public static class I360Render
 			paddingX = Shader.PropertyToID( "_PaddingX" );
 		}
 
-#if UNITY_2018_2_OR_NEWER
 		bool asyncOperationStarted = false;
-#endif
 		int cubemapSize = Mathf.Min( Mathf.NextPowerOfTwo( width ), 8192 );
 		RenderTexture activeRT = RenderTexture.active;
 		RenderTexture cubemap = null, equirectangularTexture = null;
@@ -72,10 +58,8 @@ public static class I360Render
 			{
 				Debug.LogError( "Rendering to cubemap is not supported on device/platform!" );
 
-#if UNITY_2018_2_OR_NEWER
 				if( asyncCallback != null )
 					asyncCallback( null );
-#endif
 
 				return null;
 			}
@@ -83,7 +67,6 @@ public static class I360Render
 			equirectangularConverter.SetFloat( paddingX, faceCameraDirection ? ( renderCam.transform.eulerAngles.y / 360f ) : 0f );
 			Graphics.Blit( cubemap, equirectangularTexture, equirectangularConverter );
 
-#if UNITY_2018_2_OR_NEWER
 			if( asyncCallback != null )
 			{
 				AsyncGPUReadback.Request( equirectangularTexture, 0, TextureFormat.RGB24, ( asyncResult ) =>
@@ -125,7 +108,6 @@ public static class I360Render
 				return null;
 			}
 			else
-#endif
 			{
 				RenderTexture.active = equirectangularTexture;
 				output = new Texture2D( equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false );
@@ -137,10 +119,8 @@ public static class I360Render
 		{
 			Debug.LogException( e );
 
-#if UNITY_2018_2_OR_NEWER
 			if( !asyncOperationStarted && asyncCallback != null )
 				asyncCallback( null );
-#endif
 
 			return null;
 		}
@@ -148,34 +128,22 @@ public static class I360Render
 		{
 			renderCam.targetTexture = camTarget;
 
-#if UNITY_2018_2_OR_NEWER
 			if( !asyncOperationStarted )
-#endif
-			{
 				RenderTexture.active = activeRT;
-			}
 
 			if( cubemap )
 				RenderTexture.ReleaseTemporary( cubemap );
 
 			if( equirectangularTexture )
 			{
-#if UNITY_2018_2_OR_NEWER
 				if( !asyncOperationStarted )
-#endif
-				{
 					RenderTexture.ReleaseTemporary( equirectangularTexture );
-				}
 			}
 
 			if( output )
 			{
-#if UNITY_2018_2_OR_NEWER
 				if( !asyncOperationStarted )
-#endif
-				{
 					UnityEngine.Object.DestroyImmediate( output );
-				}
 			}
 		}
 	}
