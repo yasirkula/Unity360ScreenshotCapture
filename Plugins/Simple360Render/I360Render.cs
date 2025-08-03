@@ -48,11 +48,9 @@ public static class I360Render
 		Texture2D output = null;
 		try
 		{
-			cubemap = RenderTexture.GetTemporary( cubemapSize, cubemapSize, 0 );
-			cubemap.dimension = TextureDimension.Cube;
-
-			equirectangularTexture = RenderTexture.GetTemporary( cubemapSize, cubemapSize / 2, 0 );
-			equirectangularTexture.dimension = TextureDimension.Tex2D;
+            RenderTextureDescriptor desc = new(cubemapSize, cubemapSize, RenderTextureFormat.ARGB32, 0) { dimension = TextureDimension.Cube };
+            cubemap = RenderTexture.GetTemporary(desc);
+            equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0);
 
 			if( !renderCam.RenderToCubemap( cubemap, 63 ) )
 			{
